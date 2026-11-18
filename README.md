@@ -25,7 +25,7 @@ Hunger and happiness are saved between sessions. Feeding and petting keep them u
 
 ## 🍴 Distraction eater
 
-![Eating a distraction](docs/eating.png)
+![Eating a distraction]
 
 Choose the websites and apps that distract you, and give each one a time limit. Go over the limit and your guinea pig walks out, **eats the tab bite by bite** (crumbs and all), burps, and the tab or app is actually closed.
 
