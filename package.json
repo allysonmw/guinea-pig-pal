@@ -1,0 +1,89 @@
+{
+  "name": "guinea-pig-pal",
+  "version": "1.1.0",
+  "description": "A tiny customizable 3D guinea pig that lives on your desktop.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist": "electron-builder",
+    "release": "electron-builder --publish always"
+  },
+  "author": "Allyson",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^45.3.4",
+    "electron-builder": "^25.1.8",
+    "three": "^0.170.0"
+  },
+  "productName": "Guinea Pig Pal",
+  "build": {
+    "appId": "com.allyson.guineapigpal",
+    "productName": "Guinea Pig Pal",
+    "files": [
+      "src/**/*",
+      "!src/renderer/dev.html",
+      "assets/**/*",
+      "package.json",
+      "!src/**/*.md"
+    ],
+    "icon": "assets/icon.png",
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "extendInfo": {
+        "LSUIElement": true,
+        "NSAppleEventsUsageDescription": "Guinea Pig Pal checks which website is open in your browser so it can eat distracting tabs when their timer runs out."
+      },
+      "identity": null
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "asarUnpack": [
+      "node_modules/uiohook-napi/**"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "allysonmw",
+        "repo": "guinea-pig-pal",
+        "releaseType": "release"
+      }
+    ],
+    "artifactName": "Guinea-Pig-Pal-${version}-${os}-${arch}.${ext}"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/allysonmw/guinea-pig-pal.git"
+  },
+  "allowScripts": {
+    "electron@45.3.4": true
+  },
+  "dependencies": {
+    "uiohook-napi": "^1.5.5",
+    "node-gyp-build": "^4.8.4"
+  },
+  "homepage": "https://github.com/allysonmw/guinea-pig-pal"
+}

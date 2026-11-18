@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;" />
+  <title>Customize your guinea pig</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "../vendor/three.module.js",
+      "three/addons/": "../vendor/addons/"
+    } }
+  </script>
+  <link rel="stylesheet" href="customize.css" />
+</head>
+<body>
+  <main>
+    <section class="preview">
+      <div class="stage-wrap">
+        <canvas id="preview"></canvas>
+        <div class="rug"></div>
+      </div>
+      <input id="name" class="name" maxlength="20" spellcheck="false" aria-label="Name" />
+      <p class="hint">Drag to spin · click to make them popcorn</p>
+      <div class="presets" id="presets"></div>
+    </section>
+
+    <section class="panel">
+      <nav class="tabs">
+        <button data-tab="look" class="on">🐹 Look</button>
+        <button data-tab="focus">🍴 Distraction eater</button>
+        <button data-tab="behave">⚙️ Behaviour</button>
+      </nav>
+      <div class="scroll">
+       <div class="tab" data-tab="look">
+        <div class="group">
+          <h3>Coat pattern</h3>
+          <div class="chips" id="pattern"></div>
+        </div>
+        <div class="group">
+          <h3>Fur type</h3>
+          <div class="chips" id="hair"></div>
+        </div>
+        <div class="group">
+          <h3>Main color</h3>
+          <div class="swatches" data-key="coat.base"></div>
+        </div>
+        <div class="group" id="patchGroup">
+          <h3>Second color <span class="sub" id="patchHint"></span></h3>
+          <div class="swatches" data-key="coat.patch"></div>
+        </div>
+        <div class="group">
+          <h3>Light color</h3>
+          <div class="swatches" data-key="coat.white"></div>
+        </div>
+        <div class="row">
+          <div class="group">
+            <h3>Eyes</h3>
+            <div class="swatches small" data-key="coat.eye"></div>
+          </div>
+          <div class="group">
+            <h3>Nose &amp; paws</h3>
+            <div class="swatches small" data-key="coat.skin"></div>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Body</h3>
+          <label class="slider">Chonk <input type="range" id="chonk" min="0.85" max="1.25" step="0.01" /></label>
+          <label class="slider">Size <input type="range" id="size" min="0.75" max="1.25" step="0.01" /></label>
+          <button class="ghost" id="reshuffle" title="Move the patches around">🎲 Shuffle patches</button>
+        </div>
+        <div class="group">
+          <h3>Accessory</h3>
+          <div class="chips" id="accessory"></div>
+          <div class="swatches small" data-key="accessoryColor"></div>
+        </div>
+       </div>
+
+       <div class="tab" data-tab="focus" hidden>
+        <div class="hero-toggle">
+          <label class="switch"><input type="checkbox" id="dEnabled" /><span></span></label>
+          <div>
+            <b>Eat my distractions</b>
+            <p>Spend too long on a site or app below and <span class="pname">your guinea pig</span> walks over and <em>eats it</em>. 🍴</p>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Distractions &amp; time limits</h3>
+          <div id="dList"></div>
+          <div class="add-row">
+            <select id="dType"><option value="site">Website</option><option value="app">App</option></select>
+            <input id="dMatch" placeholder="e.g. instagram.com" spellcheck="false" />
+            <input id="dMin" type="number" min="1" max="600" value="5" />
+            <span class="unit">min</span>
+            <button class="primary small" id="dAdd">Add</button>
+          </div>
+          <div class="quick" id="dQuick"></div>
+        </div>
+        <div class="group">
+          <h3>Timer</h3>
+          <label class="radio"><input type="radio" name="dMode" value="visit" /> <span><b>Per visit</b> · the timer resets after a 5-minute break</span></label>
+          <label class="radio"><input type="radio" name="dMode" value="day" /> <span><b>Per day</b> · a daily allowance, then it gets eaten on sight</span></label>
+          <label class="toggle"><input type="checkbox" id="dWarn" /> Warn me when there’s 1 minute left</label>
+        </div>
+        <div class="group">
+          <h3>When it eats an app</h3>
+          <label class="radio"><input type="radio" name="dApp" value="close" /> <span><b>Close it</b> (the app can still ask you to save)</span></label>
+          <label class="radio"><input type="radio" name="dApp" value="hide" /> <span><b>Just hide it</b> (minimize)</span></label>
+        </div>
+        <div class="group note" id="macNote" hidden>
+          <h3>On a Mac</h3>
+          <p>The first time, macOS will ask if Guinea Pig Pal can control your browser. Click <b>OK</b> so it can see which site you’re on and close the tab.</p>
+          <p id="capNote">For the realistic chomp (it eats a picture of your actual screen), allow <b>Screen Recording</b>. Without it, it eats a cute drawing of the tab instead.</p>
+          <button class="ghost small" id="capBtn">Open Screen Recording settings</button>
+        </div>
+        <div class="group note" id="linuxNote" hidden>
+          <p>Distraction detection works on Windows and Mac.</p>
+        </div>
+        <button class="ghost" id="dTest">🍴 Preview the eating animation</button>
+       </div>
+
+       <div class="tab" data-tab="behave" hidden>
+        <div class="group">
+          <h3>Behaviour</h3>
+          <label class="toggle"><input type="checkbox" data-setting="wander" /> Wander around the bottom of my screen</label>
+          <label class="toggle"><input type="checkbox" data-setting="followMouse" /> Follow my mouse sometimes</label>
+          <label class="toggle"><input type="checkbox" data-setting="sound" /> Wheeks &amp; purrs (sound)</label>
+          <label class="toggle"><input type="checkbox" data-setting="typingNibble" /> Nibble hay while I type <span class="sub">(only notices that you type, never which keys)</span></label>
+          <label class="toggle"><input type="checkbox" data-setting="sleepWhenIdle" /> Nap when I’m away from the computer</label>
+          <label class="toggle"><input type="checkbox" data-setting="alwaysOnTop" /> Stay on top of other windows</label>
+          <label class="toggle" id="loginToggle"><input type="checkbox" data-setting="startAtLogin" /> Start when my computer starts</label>
+        </div>
+       </div>
+      </div>
+      <footer>
+        <button class="ghost" id="random">✨ Surprise me</button>
+        <span class="spacer"></span>
+        <button class="ghost" id="cancel">Cancel</button>
+        <button class="primary" id="save">Save</button>
+      </footer>
+    </section>
+  </main>
+  <div class="toast" id="toast">Saved! 💛</div>
+  <script type="module" src="customize.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<script type="importmap">{ "imports": { "three": "../vendor/three.module.js", "three/addons/": "../vendor/addons/" } }</script>
+<style>html,body{margin:0;background:transparent}canvas{width:100vw;height:100vh;display:block}</style></head>
+<body><canvas id="c"></canvas><script type="module">
+import * as THREE from 'three';
+import { buildGuineaPig, makeStage, makeFood } from '../shared/guineapig.js';
+const q = new URLSearchParams(location.search);
+const { renderer, scene, camera } = makeStage(document.getElementById('c'), { fov: +(q.get('fov')||30) });
+const cfg = q.get('cfg') ? JSON.parse(q.get('cfg')) : {};
+const pig = buildGuineaPig(cfg); if (!q.get('nopig')) scene.add(pig.object);
+if (q.get('food')) q.get('food').split(',').forEach((f, i, arr) => { const m = makeFood(f); m.position.x = (i - (arr.length-1)/2) * 0.75; if (!q.get('nopig')) m.position.set(0.05, 0, 1.45); scene.add(m); });
+const [x,y,z] = (q.get('cam')||'3.5,2,5').split(',').map(Number);
+const [tx,ty,tz] = (q.get('at')||'0,0.7,0').split(',').map(Number);
+camera.position.set(x,y,z); camera.lookAt(tx,ty,tz);
+const r = () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); };
+r();
+const st = q.get('state') ? JSON.parse(q.get('state')) : {};
+let t=0, n=0; function loop(){ t+=1/60; pig.animate(t, 1/60, st); if (++n % 20 === 0 || n < 3) renderer.render(scene,camera); if (n < 120) requestAnimationFrame(loop);} loop();
+</script></body></html>
