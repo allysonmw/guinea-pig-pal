@@ -164,7 +164,7 @@ Serve the folder (`npx serve .` or `python3 -m http.server`) and open `src/rende
 ## Ideas for next steps
 - Multiple guinea pigs at once (they come in pairs, after all!)
 - A hay pile / hidey house that sits on your taskbar
-- A focus timer where it naps while you work (like Hamdori)
+- A focus timer where it naps while you work 
 - A browser extension for exact URL detection on Windows
 - Real typing detection (needs a native module like `uiohook-napi` + Accessibility permission on Mac)
 - Hats unlocked by keeping your pig happy
