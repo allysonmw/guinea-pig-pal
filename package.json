@@ -21,6 +21,7 @@
   "build": {
     "appId": "com.allyson.guineapigpal",
     "productName": "Guinea Pig Pal",
+    "npmRebuild": false,
     "files": [
       "src/**/*",
       "!src/renderer/dev.html",

@@ -11,7 +11,19 @@ permissions:
   contents: write
 
 jobs:
+  # make the release once, so the Mac and Windows builds don't both try to create it at the same time
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "Guinea Pig Pal $GITHUB_REF_NAME" --notes "Download the installer for your computer below (Assets)."
+
   build:
+    needs: release
     strategy:
       fail-fast: false
       matrix:
