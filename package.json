@@ -1,6 +1,6 @@
 {
   "name": "guinea-pig-pal",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A tiny customizable 3D guinea pig that lives on your desktop.",
   "main": "src/main.js",
   "scripts": {
@@ -45,7 +45,8 @@
         "LSUIElement": true,
         "NSAppleEventsUsageDescription": "Guinea Pig Pal checks which website is open in your browser so it can eat distracting tabs when their timer runs out."
       },
-      "identity": null
+      "identity": null,
+      "hardenedRuntime": false
     },
     "win": {
       "target": [
@@ -73,7 +74,8 @@
         "releaseType": "release"
       }
     ],
-    "artifactName": "Guinea-Pig-Pal-${version}-${os}-${arch}.${ext}"
+    "artifactName": "Guinea-Pig-Pal-${version}-${os}-${arch}.${ext}",
+    "afterPack": "build/adhoc-sign.js"
   },
   "repository": {
     "type": "git",
