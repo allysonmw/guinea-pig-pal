@@ -174,6 +174,10 @@ function refresh() {
   const usesPatch = cfg.coat.pattern !== 'solid';
   $('#patchGroup').style.opacity = usesPatch ? 1 : 0.45;
   $('#patchHint').textContent = PATCH_HINT[cfg.coat.pattern] || '';
+  // Himalayans always have dark points, so their nose & paws use the second color instead
+  const himalayan = cfg.coat.pattern === 'himalayan';
+  $('#skinGroup').style.opacity = himalayan ? 0.45 : 1;
+  $('#skinHint').textContent = himalayan ? '(Himalayan uses the second color)' : '';
   $('[data-key="accessoryColor"]').style.display = cfg.accessory === 'none' ? 'none' : '';
   $('#chonk').value = cfg.coat.chonk;
   $('#size').value = cfg.size;
