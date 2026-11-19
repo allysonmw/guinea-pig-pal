@@ -1,6 +1,6 @@
-# 🐹 Guinea Pig Pal
+# Guinea Pig Pal!!!
 
-A realistic, furry 3D guinea pig that lives in the corner of your desktop (Windows & Mac), inspired by Hamdori. It's fully customizable, and it **eats your distractions**.
+A realistic, furry 3D guinea pig that lives in the corner of your desktop (Windows & Mac). It's fully customizable, and it **eats your distractions**.
 
 ![Presets](docs/presets.png)
 
@@ -17,15 +17,15 @@ A realistic, furry 3D guinea pig that lives in the corner of your desktop (Windo
 | **Typing / using the computer** | Nibbles every now and then |
 | **Away from the computer for 2+ minutes** | Takes a nap (zzz), wakes up when you're back |
 | **Left alone** | Grooms, sniffs, looks around, wanders along the bottom of the screen |
-| **Hungry** | Wheeks at you for food 🥕 |
+| **Hungry** | Wheeks at you for food |
 
 The window is see-through and clicks pass through everywhere except on the guinea pig itself, so it never gets in your way.
 
-Hunger and happiness are saved between sessions. Feeding and petting keep them up. It never gets sick or dies, it just gets a bit needy. 💛
+Hunger and happiness are saved between sessions. Feeding and petting keep them up. It never gets sick or dies, it just gets a bit needy. 
 
 ## 🍴 Distraction eater
 
-![Eating a distraction](docs/eating.png)
+![Eating a distraction]
 
 Choose the websites and apps that distract you, and give each one a time limit. Go over the limit and your guinea pig walks out, **eats the tab bite by bite** (crumbs and all), burps, and the tab or app is actually closed.
 
@@ -164,7 +164,7 @@ Serve the folder (`npx serve .` or `python3 -m http.server`) and open `src/rende
 ## Ideas for next steps
 - Multiple guinea pigs at once (they come in pairs, after all!)
 - A hay pile / hidey house that sits on your taskbar
-- A focus timer where it naps while you work (like Hamdori)
+- A focus timer where it naps while you work 
 - A browser extension for exact URL detection on Windows
 - Real typing detection (needs a native module like `uiohook-napi` + Accessibility permission on Mac)
 - Hats unlocked by keeping your pig happy
