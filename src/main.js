@@ -85,7 +85,7 @@ function createPetWindow() {
     const d = petDims(), ow = state.windowPos.w || 320, oh = state.windowPos.h || 280;
     pos = { x: Math.round(pos.x + (ow - d.w) / 2), y: pos.y + oh - d.h };
   }
-  petWin = new BrowserWindow({
+  const win = petWin = new BrowserWindow({
     width: petDims().w,
     height: petDims().h,
     x: pos.x,
@@ -121,7 +121,44 @@ function createPetWindow() {
   petWin.on('close', (e) => { if (!appQuitting) e.preventDefault(); });
   petWin.on('query-session-end', () => { appQuitting = true; });   // Windows shutting down / logging off
   petWin.on('session-end', () => { appQuitting = true; });
-  petWin.on('closed', () => { petWin = null; });
+  petWin.on('closed', () => { if (petWin === win) petWin = null; });
+  // If the guinea pig hasn't been drawn shortly after loading (e.g. the graphics card wasn't ready yet
+  // right after the computer started), it would just be a blank box: rebuild the window instead.
+  win.webContents.on('did-finish-load', () => {
+    clearTimeout(petWatchdog);
+    petWatchdog = setTimeout(() => { if (petWin === win) recoverPet('never drew'); }, 15000);
+  });
+  win.webContents.on('render-process-gone', (_e, d) => { if (petWin === win && !appQuitting) recoverPet('renderer ' + d.reason); });
+}
+
+// ---------- blank-window recovery ----------
+let petWatchdog = null, petRecoveries = 0, recoverTimer = null;
+function recoverPet(why) {
+  if (appQuitting || recoverTimer) return;
+  if (petRecoveries >= 6) { console.warn('guinea pig: giving up recovering', why); return; }
+  petRecoveries++;
+  console.warn('guinea pig: rebuilding the pet window because', why);
+  clearTimeout(petWatchdog);
+  recoverTimer = setTimeout(() => {
+    recoverTimer = null;
+    const old = petWin;
+    petWin = null;
+    try { old?.destroy(); } catch { /* already gone */ }
+    if (eatWin && !eating) { try { eatWin.destroy(); } catch { /* ignore */ } eatWin = null; }
+    createPetWindow();
+  }, Math.min(2000 * petRecoveries, 8000));
+}
+ipcMain.on('pet:alive', (e) => {
+  if (petWin && e.sender === petWin.webContents) { clearTimeout(petWatchdog); petRecoveries = 0; }
+});
+ipcMain.on('pet:broken', (e, why) => { if (petWin && e.sender === petWin.webContents) recoverPet(why); });
+app.on('child-process-gone', (_e, d) => { if (d.type === 'GPU' && !appQuitting) recoverPet('graphics process ' + d.reason); });
+
+// started automatically when the computer turned on?
+function startedAtLogin() {
+  if (process.argv.includes('--at-login')) return true;
+  if (process.platform === 'darwin') { try { return !!app.getLoginItemSettings().wasOpenedAtLogin; } catch { return false; } }
+  return false;
 }
 
 function openCustomizer(tab) {
@@ -160,7 +197,7 @@ function applyAlwaysOnTop() {
 
 function applyLoginItem() {
   if (process.platform === 'linux') return;
-  app.setLoginItemSettings({ openAtLogin: !!state.config?.settings?.startAtLogin });
+  app.setLoginItemSettings({ openAtLogin: !!state.config?.settings?.startAtLogin, args: ['--at-login'] });
 }
 
 // ---------- saved looks ----------
@@ -311,6 +348,7 @@ function askMouth(towardScreen) {
     const done = (_e, m) => { clearTimeout(timer); resolve(m); };
     const timer = setTimeout(() => { ipcMain.removeListener('pet:mouth', done); resolve(null); }, 1500);
     ipcMain.once('pet:mouth', done);
+    if (!petWin) { done(null, null); return; }
     const b = petWin.getBounds();
     sendAction('swallow-prep', { x: towardScreen.x - b.x, y: towardScreen.y - b.y });
   });
@@ -352,7 +390,7 @@ async function eatDistraction({ item, info, repeat, config }) {
 
   // the guinea pig turns toward the tab and gets ready; we need its mouth position
   const mouth = await askMouth({ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
-  const pb = petWin.getBounds();
+  const pb = petWin?.getBounds() || petB;
   const mouthScreen = mouth ? { x: pb.x + mouth.x, y: pb.y + mouth.y } : { x: pb.x + pb.width / 2, y: pb.y + pb.height * 0.6 };
 
   const win = ensureEatWindow(display);
@@ -602,7 +640,10 @@ app.whenReady().then(() => {
   Menu.setApplicationMenu(process.platform === 'darwin'
     ? Menu.buildFromTemplate([{ label: app.name, submenu: [{ role: 'quit' }] }, { role: 'editMenu' }])
     : null);
-  createPetWindow();
+  // Right after the computer starts, Windows' graphics aren't always ready for a see-through 3D window yet,
+  // so give it a few seconds first (the tray icon is there straight away).
+  const atLogin = startedAtLogin();
+  setTimeout(createPetWindow, atLogin ? (process.platform === 'win32' ? 8000 : 3000) : 0);
   createTray();
   startSensors();
   startTracker();

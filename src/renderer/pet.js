@@ -845,7 +845,12 @@ function frame(now) {
   update(acc);
   acc = 0;
   renderer.render(scene, camera);
+  // tell the app the guinea pig really got drawn (if it never does, the app rebuilds this window)
+  if (++framesDrawn === 20 && !renderer.getContext().isContextLost()) api.petAlive?.();
 }
+let framesDrawn = 0;
+// if the graphics card resets (sleep, driver update, right after startup...) rebuild instead of showing a blank box
+canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); api.petBroken?.('webgl context lost'); });
 
 setInterval(saveStatsSoon, 15000);
 

@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld('api', {
   eatReady: () => ipcRenderer.send('eat:ready'),
   eatDone: () => ipcRenderer.send('eat:done'),
   reportMouth: (m) => ipcRenderer.send('pet:mouth', m),
+  petAlive: () => ipcRenderer.send('pet:alive'),
+  petBroken: (why) => ipcRenderer.send('pet:broken', String(why || '')),
   onEatStart: (fn) => ipcRenderer.on('eat:start', (_e, d) => fn(d)),
   onTab: (fn) => ipcRenderer.on('customizer:tab', (_e, t) => fn(t)),
   closeCustomizer: () => ipcRenderer.send('customizer:close'),
