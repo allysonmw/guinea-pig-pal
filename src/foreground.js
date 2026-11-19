@@ -28,6 +28,7 @@ public static class GPFG {
   [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint m, IntPtr w, IntPtr l);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
   [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L; public int T; public int R; public int B; }
 }
@@ -51,9 +52,20 @@ while ($true) {
       $out = ($o | ConvertTo-Json -Compress)
     } elseif ($cmd -eq 'closetab') {
       $h = [IntPtr][Int64]$parts[1]
-      if ([GPFG]::GetForegroundWindow() -ne $h) { [void][GPFG]::SetForegroundWindow($h); Start-Sleep -Milliseconds 150 }
-      [System.Windows.Forms.SendKeys]::SendWait('^w')
-      $out = '{"ok":true}'
+      # bring the browser to the front (a quick Alt tap lets Windows allow it), and only press
+      # Ctrl+W if the browser really is in front, so the keypress can't land on another window
+      for ($i = 0; $i -lt 4 -and [GPFG]::GetForegroundWindow() -ne $h; $i++) {
+        [GPFG]::keybd_event(0x12, 0, 0, [UIntPtr]::Zero); [GPFG]::keybd_event(0x12, 0, 2, [UIntPtr]::Zero)
+        [void][GPFG]::SetForegroundWindow($h)
+        Start-Sleep -Milliseconds 120
+      }
+      if ([GPFG]::GetForegroundWindow() -eq $h) {
+        [System.Windows.Forms.SendKeys]::SendWait('^w')
+        $out = '{"ok":true}'
+      } else {
+        [void][GPFG]::ShowWindow($h, 6)   # couldn't get to the tab safely: minimize the browser instead
+        $out = '{"ok":true,"minimized":true}'
+      }
     } elseif ($cmd -eq 'close') {
       [void][GPFG]::PostMessage([IntPtr][Int64]$parts[1], 0x0010, [IntPtr]::Zero, [IntPtr]::Zero)
       $out = '{"ok":true}'

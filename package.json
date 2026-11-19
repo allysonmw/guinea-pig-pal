@@ -1,6 +1,6 @@
 {
   "name": "guinea-pig-pal",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A tiny customizable 3D guinea pig that lives on your desktop.",
   "main": "src/main.js",
   "scripts": {

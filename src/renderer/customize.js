@@ -56,6 +56,7 @@ new ResizeObserver(resize).observe(canvas);
 
 let rebuildTimer = null;
 function rebuild(immediate = false) {
+  if (typeof renderLooks === 'function' && cfg) queueMicrotask(() => renderLooks());
   const go = () => {
     if (pig) { scene.remove(pig.object); pig.dispose(); }
     pig = buildGuineaPig(cfg);
@@ -227,6 +228,95 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 1400);
 }
 
+// ---------- saved looks ("outfits") ----------
+// A look is everything about how the guinea pig looks (not its name or settings).
+const LOOK_KEYS = ['coat', 'accessory', 'accessoryColor', 'size'];
+const lookOf = (c) => structuredClone({ coat: c.coat, accessory: c.accessory, accessoryColor: c.accessoryColor, size: c.size });
+const sameLook = (a, b) => JSON.stringify(lookOf(a)) === JSON.stringify(lookOf(b));
+const looks = () => (cfg.looks ||= []);
+const ACC_NAMES = Object.fromEntries(ACCESSORIES);
+const PAT_NAMES = Object.fromEntries(PATTERNS);
+
+// saved looks are stored right away (no need to press Save), without saving any other unsaved edits
+function persistLooks() {
+  original = { ...structuredClone(original || cfg), looks: structuredClone(looks()) };
+  api.saveConfig(original);
+  api.previewConfig(cfg); // keep showing what you're currently editing
+}
+
+function renderLooks() {
+  const el = $('#lookList');
+  el.textContent = '';
+  if (!looks().length) {
+    const p = document.createElement('p');
+    p.className = 'empty';
+    p.textContent = 'No saved looks yet. Dress up your guinea pig, name the look, and save it here!';
+    el.appendChild(p);
+    return;
+  }
+  for (const l of looks()) {
+    const row = document.createElement('div');
+    const worn = sameLook(l, cfg);
+    row.className = 'look' + (worn ? ' on' : '');
+    const dot = document.createElement('i');
+    const second = l.coat.pattern === 'himalayan' ? l.coat.patch : l.coat.pattern === 'solid' ? l.coat.base : l.coat.white;
+    dot.style.background = `linear-gradient(135deg, ${l.coat.base} 50%, ${second} 50%)`;
+    const name = document.createElement('div');
+    name.className = 'lname';
+    name.textContent = l.name;
+    const small = document.createElement('small');
+    small.textContent = [PAT_NAMES[l.coat.pattern], l.accessory !== 'none' ? ACC_NAMES[l.accessory] : null].filter(Boolean).join(' · ');
+    name.appendChild(small);
+    const equip = document.createElement('button');
+    equip.className = 'equip';
+    equip.textContent = worn ? 'Wearing' : 'Equip';
+    equip.onclick = () => { if (!worn) equipLook(l); };
+    const del = document.createElement('button');
+    del.className = 'del';
+    del.title = 'Delete this look';
+    del.textContent = '🗑';
+    del.onclick = () => {
+      if (!confirm(`Delete the look "${l.name}"?`)) return;
+      cfg.looks = looks().filter((x) => x.id !== l.id);
+      persistLooks();
+      renderLooks();
+      toast(`Deleted "${l.name}"`);
+    };
+    row.append(dot, name, equip, del);
+    el.appendChild(row);
+  }
+}
+
+function saveLook() {
+  const name = $('#lookName').value.trim();
+  if (!name) { $('#lookName').focus(); toast('Give your look a name first ✏️'); return; }
+  const existing = looks().find((l) => l.name.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    if (!confirm(`You already have a look called "${existing.name}". Replace it with this one?`)) return;
+    Object.assign(existing, lookOf(cfg), { name });
+  } else {
+    looks().push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, ...lookOf(cfg) });
+  }
+  $('#lookName').value = '';
+  persistLooks();
+  renderLooks();
+  toast(`Saved "${name}" 💾`);
+}
+
+// putting a look on applies it to your guinea pig straight away
+function equipLook(l) {
+  for (const k of LOOK_KEYS) cfg[k] = structuredClone(l[k]);
+  original = { ...structuredClone(original || cfg), ...lookOf(l), looks: structuredClone(looks()) };
+  api.saveConfig(original);
+  refresh();
+  rebuild();
+  renderLooks();
+  toast(`${cfg.name} is wearing "${l.name}" ✨`);
+}
+
+$('#lookSave').onclick = saveLook;
+$('#lookName').addEventListener('keydown', (e) => { if (e.key === 'Enter') saveLook(); });
+
 // ---------- tabs ----------
 function showTab(name) {
   if (!['look', 'focus', 'behave'].includes(name)) name = 'look';
@@ -368,6 +458,12 @@ $('#save').onclick = () => {
 };
 $('#cancel').onclick = () => { if (original) api.previewConfig(original); api.closeCustomizer(); };
 api.onConfig((c) => {
+  if (c?.looks) {
+    cfg.looks = structuredClone(c.looks);
+    if (original) original.looks = structuredClone(c.looks);
+    if (c.lookEquipped) { for (const k of LOOK_KEYS) { cfg[k] = structuredClone(c[k]); if (original) original[k] = structuredClone(c[k]); } refresh(); rebuild(); }
+    renderLooks();
+  }
   if (c?.settings) { cfg.settings = { ...cfg.settings, ...c.settings }; refresh(); }
   if (c?.distractions && c.distractions.enabled !== D().enabled) { D().enabled = c.distractions.enabled; renderDistractions(); }
 });
@@ -378,6 +474,7 @@ api.onConfig((c) => {
   original = structuredClone(cfg);
   refresh();
   renderDistractions();
+  renderLooks();
   try {
     const info = await api.getDistractionInfo();
     $('#macNote').hidden = info.platform !== 'darwin';

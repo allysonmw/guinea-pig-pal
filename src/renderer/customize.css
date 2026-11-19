@@ -72,6 +72,32 @@ main { display: grid; grid-template-columns: minmax(360px, 1fr) 440px; height: 1
 .preset:hover { border-color: var(--accent); }
 .preset i { width: 22px; height: 22px; border-radius: 50%; display: block; }
 
+/* saved looks */
+.look-save { display: flex; gap: 8px; margin-bottom: 10px; }
+.look-save input {
+  flex: 1; min-width: 0; font: inherit; color: var(--ink);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 10px; background: var(--panel);
+}
+.look-save input:focus { outline: none; border-color: var(--accent); }
+#lookList { display: flex; flex-direction: column; gap: 6px; }
+#lookList .empty { color: #c1ab9b; font-size: 13px; margin: 2px 2px 0; }
+.look {
+  display: flex; align-items: center; gap: 10px;
+  border: 1.5px solid var(--line); border-radius: 12px; padding: 6px 8px 6px 10px; background: var(--panel);
+}
+.look.on { border-color: var(--accent); background: var(--accent-soft); }
+.look i { width: 26px; height: 26px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.06); }
+.look .lname { flex: 1; min-width: 0; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.look .lname small { display: block; font-weight: 600; color: var(--muted); font-size: 11.5px; }
+.look button {
+  font: inherit; font-weight: 800; font-size: 12.5px; border-radius: 9px; padding: 5px 11px; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--panel); color: var(--ink);
+}
+.look button.equip:hover { border-color: var(--accent); }
+.look.on button.equip { background: var(--accent); border-color: var(--accent); color: #fff; cursor: default; }
+.look button.del { padding: 5px 8px; color: var(--muted); }
+.look button.del:hover { border-color: #e0a3a3; color: #c43d3d; }
+
 /* panel */
 .panel {
   background: var(--panel);

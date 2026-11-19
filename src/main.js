@@ -7,6 +7,8 @@ const { setupUpdates } = require('./updater');
 const path = require('path');
 const fs = require('fs');
 
+let appQuitting = false;
+
 const PET_W = 360;
 const PET_H = 310;
 // the window grows with the size slider so a big guinea pig still fits
@@ -115,6 +117,10 @@ function createPetWindow() {
     state.windowPos = { x, y, w, h };
     saveState();
   });
+  // A stray Ctrl+W / Cmd+W / Alt+F4 must never close the guinea pig (only quitting the app does)
+  petWin.on('close', (e) => { if (!appQuitting) e.preventDefault(); });
+  petWin.on('query-session-end', () => { appQuitting = true; });   // Windows shutting down / logging off
+  petWin.on('session-end', () => { appQuitting = true; });
   petWin.on('closed', () => { petWin = null; });
 }
 
@@ -157,6 +163,23 @@ function applyLoginItem() {
   app.setLoginItemSettings({ openAtLogin: !!state.config?.settings?.startAtLogin });
 }
 
+// ---------- saved looks ----------
+const LOOK_KEYS = ['coat', 'accessory', 'accessoryColor', 'size'];
+function isWearing(l) {
+  const c = state.config || {};
+  return LOOK_KEYS.every((k) => JSON.stringify(l[k] ?? null) === JSON.stringify(c[k] ?? null));
+}
+function equipLook(id) {
+  const l = state.config?.looks?.find((x) => x.id === id);
+  if (!l) return;
+  for (const k of LOOK_KEYS) if (l[k] !== undefined) state.config[k] = JSON.parse(JSON.stringify(l[k]));
+  saveState();
+  fitPetWindow(state.config);
+  petWin?.webContents.send('config:changed', state.config);
+  customizeWin?.webContents.send('config:changed', { ...state.config, lookEquipped: true });
+  rebuildTrayMenu();
+}
+
 function sendAction(action, payload) {
   petWin?.webContents.send('pet:action', { action, payload });
 }
@@ -191,6 +214,10 @@ function buildPetMenu() {
     },
     { label: 'Drink water', click: () => sendAction('drink') },
     { label: st.sleeping ? 'Wake up' : 'Nap time', click: () => sendAction(st.sleeping ? 'wake' : 'sleep') },
+    ...(state.config?.looks?.length ? [{
+      label: 'Saved looks',
+      submenu: state.config.looks.map((l) => ({ label: l.name, type: 'checkbox', checked: isWearing(l), click: () => equipLook(l.id) })),
+    }] : []),
     { label: 'Customize…', click: () => openCustomizer() },
     { type: 'separator' },
     {
@@ -572,6 +599,9 @@ async function askTypingPermissionOnce() {
 app.whenReady().then(() => {
   state = loadState();
   if (process.platform === 'darwin') app.dock?.hide();
+  Menu.setApplicationMenu(process.platform === 'darwin'
+    ? Menu.buildFromTemplate([{ label: app.name, submenu: [{ role: 'quit' }] }, { role: 'editMenu' }])
+    : null);
   createPetWindow();
   createTray();
   startSensors();
@@ -591,6 +621,7 @@ app.whenReady().then(() => {
 app.on('second-instance', () => { petWin?.show(); openCustomizer(); });
 app.on('window-all-closed', (e) => { /* keep running in tray */ });
 app.on('before-quit', () => {
+  appQuitting = true;
   tracker?.stop();
   stopKeyboard();
   try {
