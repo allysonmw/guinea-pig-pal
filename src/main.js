@@ -592,10 +592,12 @@ function enableKeyboard(allowPrompt) {
   // Only show macOS's request right after you said yes, or the very first time this
   // particular app (the test version or the installed app) runs, never again after that
   const settings = state.config?.settings || {};
-  const firstTimeForThisApp = settings.typingPromptedApp !== process.execPath;
+  // (each new version counts as a new app to macOS, so it asks once more after an update)
+  const thisApp = process.execPath + '@' + app.getVersion();
+  const firstTimeForThisApp = settings.typingPromptedApp !== thisApp;
   if (allowPrompt || firstTimeForThisApp) {
     macTrusted(true);
-    if (state.config?.settings) { state.config.settings.typingPromptedApp = process.execPath; saveState(); }
+    if (state.config?.settings) { state.config.settings.typingPromptedApp = thisApp; saveState(); }
   }
   clearInterval(keyboard.waitTimer);
   keyboard.waitTimer = setInterval(() => {
