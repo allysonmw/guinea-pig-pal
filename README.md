@@ -139,7 +139,7 @@ src/
   foreground.js        Detects the app/site in front; closes tabs & apps (PowerShell on Windows, AppleScript on Mac)
   distractions.js      Timers, warnings, and when to eat
   shared/
-    guineapig.js       ⭐ The 3D guinea pig: sculpted body, shell-rendered fur, eyes/ears/toes, patterns, accessories
+    guineapig.js       The 3D guinea pig: sculpted body, shell-rendered fur, eyes/ears/toes, patterns, accessories
     sounds.js          Synthesized wheeks, purrs, and munching (no audio files)
     api.js             Lets the pages also run in a normal browser for quick previews
   renderer/
