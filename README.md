@@ -55,8 +55,9 @@ On Mac, Firefox only exposes the window title, and that needs **Accessibility** 
 - **Colors:** main, second, and light fur; eyes; nose & paws. Pick from real guinea pig colors or any custom color
 - **Chonk and size sliders**
 - **Shuffle patches** to rearrange where the colors land
-- **Accessories:** bow, party hat, flower crown, bandana, glasses, top hat, crown (each with a color)
+- **Accessories:** bow, party hat, flower crown, glasses, top hat, crown (each with a color)
 - **Name** it, and use 7 presets or ✨ *Surprise me*
+- **My looks:** save outfits under a name, then equip or delete them anytime (also from the right-click menu → *Saved looks*)
 - **Behaviour toggles:** wander, sounds, nap when idle, always on top, start at login
 
 Changes show live on the desktop pet while you edit. Cancel reverts them.
